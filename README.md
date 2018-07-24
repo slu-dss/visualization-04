@@ -9,6 +9,23 @@
 ## Lesson Overview
 **THIS IS AN EMPTY VERSION OF THE LESSON TEMPLATE DESGINED TO GET INSTRUCTORS AND MAINTAINERS STARTED ON NEW LESSONS.**
 
+To apply this template to a new repo named `new-lesson` via the terminal:
+
+```bash
+# Create a bare clone of the repository.
+git clone --bare https://github.com/slu-dss/empty-lesson.git
+
+# Mirror-push to the new repository.
+cd empty-lesson.git
+git push --mirror https://github.com/slu-dss/new-lesson.git
+
+# Remove the temporary local repository you created in step 1.
+cd ..
+rm -rf empty-lesson.git
+```
+
+Details can be found on [GitHub's help page for duplicating repos](https://help.github.com/articles/duplicating-a-repository/).
+
 ### Objectives
 At the end of this lesson, participants should be able to:
 
