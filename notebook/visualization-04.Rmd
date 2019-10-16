@@ -1,0 +1,390 @@
+---
+title: "Visualization 04 - Hip to be geom_ Square"
+author: "Yujie Su, M.S. & Matthew Schuelke, Ph.D."
+date: '(`r format(Sys.time(), "%B %d, %Y")`)'
+output:
+  github_document: default
+  html_notebook: default
+---
+
+## Introduction
+
+A plot's geometry dictates what visual elements will be used. In this section, we'll familiarize you with the geometries used in the three most common plot types you'll encounter - scatter plots, bar charts and line plots. We'll look at a variety of different ways to construct these plots.
+
+After the data and aesthetics layers are specified, the third essential component to all plots is the geometry layer, that is, how will the plot actually look. 
+
+There are 37 geometries to choose from, in this part we'll introduce 3 plot types you should have a good grasp of: scatter plots, bar plots, and line plots.
+
+* Scatter plots: points, jitter, abline
+* Bar plots: histogram, bar, errorbar
+* Line plots: line
+
+## Load Dependencies
+
+The following code loads the package dependencies for our analysis:
+
+```{r package-load-1}
+# tidyverse packages
+library(dplyr)    # data wrangling
+library(tidyr)    # data wrangling
+library(ggplot2)  # data plotting
+library(readr)    # work with csv files
+library(forecast) # time-series data
+library(here)
+```
+
+We now have the packages needed for our analyses.
+
+## Load Data
+
+*Dataset autocar*
+
+```{r}
+cars <- read_csv(here("data", "autocar.csv")) %>%
+  mutate(cyl = as.factor(cyl), 
+         origin = as.factor(origin))
+print(cars)
+```
+
+*Dataset woolyrnq*
+
+This data is the quaterly production of woolen yarn in Australia, included in the package "forecast".
+
+```{r}
+wool <- readxl::read_xlsx(here("data", "woolyrnq.xlsx"))
+print(wool)
+```
+
+*Dataset Wineind* 
+
+Wineind is data of total Australian wine sales by wine makers (in bottles) from January 1980 to August 1994, included in package "forecast"
+
+Now, you try to load dataset "wineind.csv"
+
+```{r practice-1}
+
+```
+
+## Scatter Plot
+
+Let's begin with scatter plots. We've already generated some of these in the previous chapter using the geom point function. All the geometries that we just showed can be accessed via its own geom_ function.
+
+In addition, each geom is associated with specific aesthetic mappings, some of which are essential. For example, to use geom point, we need to have an X and Y aesthetic. 
+
+```{r}
+ggplot(cars, aes(x = weight, y = mpg)) + 
+  geom_point()
+```
+
+In addition to the essential aesthetics, we could also choose optional aesthetics. For geom point, we could have also specified alpha, color, fill, shape or size as aesthetic mappings, as shown blow, or as attribute settings, as we discussed in the last section.
+
+```{r}
+ggplot(cars, aes(x = weight, y = mpg, col = cyl)) + 
+  geom_point()
+```
+
+A very convenient feature of ggplot is the ability to specify aesthetics for a given geom inside the geom fuction, as shown below. This is a very useful tool, because we're going to begin layering many geoms on top of each other and it means we can control the aesthetic mappings of each layer independently. 
+
+```{r}
+ggplot(cars, aes(x = weight, y = mpg)) + 
+  geom_point(aes(col = cyl))
+```
+
+Here it doesn't make any difference, but we'll see why it's important shortly. Not only can we assign aesthetic mappings to a specific geom, but we can also specify the data layer inside the geom function. 
+
+This is helpful for when I have a data frame that contains summary statistics, such as the mean, for each of my variables. In the case where I have the average mpg and weight for each of cyl category, if I want to make a scatter plot showing all the individual points and have the mean of X and Y plotted on top, I could add another geom point layer accessing this dataset.
+
+```{r}
+# First let's create a dataset with summary data
+cars %>% 
+  group_by(cyl) %>%
+  summarize(weight = mean(weight),
+          mpg = mean(mpg)) -> cars_cyl
+
+# Second plot the raw data and summary data via two layers
+ggplot(cars, aes(x = weight, y = mpg, col = cyl)) +
+  geom_point() + 
+  geom_point(data = cars_cyl, aes(shape = cyl), size =5)
+```
+
+So, in this plot I have two geom point layers, one inherits the data and aesthetics from the parent ggplot function, and the other I specify from a different dataset.
+
+I don't need to redefine the aesthetics, such as X, Y, and color in the second geom function because they are also inherited as from the first geom fuction. 
+
+Notice that I have specified the shape and size attributes of the second layer, so they are distinguishable from the background points. 
+
+Now, you try to create a scatter plot. Map mpg onto the Y axis, weight onto the X axis, and origin onto color. Then add the second layer indicates the mean of each origin category.
+
+Here is the summary dataset of your second layer.
+```{r}
+
+cars_origin <- cars %>% 
+  group_by(origin) %>%
+  summarize(weight = mean(weight),
+          mpg = mean(mpg)) 
+```
+
+```{r practice-2}
+# Create a scatter plot, map mpg onto Y axis, weight onto X axis and map origin onto color. Then add the second layer, using plots indicates the mean of each origin category
+
+```
+
+## Crosshairs
+
+Instead of adding a point, I want to have crosshairs marking where each mean value appears on the plot. This time I can use the geom_vline command to add vertial lines and the geom_hline command to add horizontal lines. 
+
+```{r}
+ggplot(cars, 
+       aes(x = weight, y = mpg, col = cyl)) +
+  geom_point() + 
+  geom_vline(data = cars_cyl, 
+             aes(xintercept = weight, col = cyl)) + 
+  geom_hline(data = cars_cyl, 
+             aes(yintercept = mpg, col = cyl))
+```
+
+Now, it's your turn to make crosshairs of each mean value after group by origin.
+
+```{r practice-5}
+# Create a scatter plot, map mpg onto Y axis, weight onto X axis and map origin onto color. Then add the second layer, using crosshairs indicates the mean of each origin category.
+
+```
+
+*geom_jitter*
+
+We can use the position argument to change the position of identity to jitter. We will use the geom_jitter() function. geom_jitter() is a wrapper for geom_point with position set to jitter. On top of jittering, we would also deal with the over-plotting of the points by adjusting the alpha blending, which works great as an attribute. This helps us to see regions of high density.
+
+```{r}
+ggplot(cars, aes(x = acceleration, y = displacement, col = cyl)) + 
+  geom_jitter(alpha = 0.5) 
+```
+
+Another way to deal with over-plotting is to change the symbol to a hollow circle, where the shape equals one. We can more accurately and quickly see what the data is actually showing, even if the jittering adds some noise to both axes. 
+
+```{r}
+ggplot(cars, aes(x = acceleration, y =displacement, col = cyl)) + 
+  geom_jitter(shape = 1)
+```
+
+## Bar plot 
+
+*geom_histogram*
+
+In this section, we'll take a look at the typical uses of bar plots and their associated geoms. We're going to begin by discussing one of the most useful types of bar plots, the histogram, which shows the binned distribution of a continuous variable. 
+
+To make a histogram we just need to specify a single aesthetic, X, which is a continuous variable of interest. The output allows us to see the typical features of a histogram. Notice that geom histogram doesn't actually plot our data, it plots a statistical function to our data set. So instead, what we have are bins and not actually our original data. 
+
+There is always a message reported with geom histogram to let you know what happened. The message refers to the stat bin, which should give you an idea that this geom is associated with a specific statistic.
+
+```{r}
+ggplot(cars, aes(x = mpg)) + 
+  geom_histogram()
+
+diff(range(cars$mpg))
+```
+
+The message told us that the bin argument took the default value of range over 30, but of course we can change this. 
+
+Let's change that and see what happens.
+
+```{r}
+ggplot(cars, aes(x = mpg)) + 
+  geom_histogram(binwidth = 5)
+```
+
+Changing the width to 5 already gives us a better impression of our data. There are many ways to choose the binning statistic, but there is no one best way, so we need to use some common sense. 
+
+Another thing to know about histograms is there is no space between the bars. That's to emphasize that this is a representation of an underling continuous distribution. The Y axis shows the absolute count of each bin.
+
+Another way to look at this would be to ask what proportion of the total is represented in each bin. We can alternatively refer to this as the frequency of density. To gain access to the density, we're going to manually assign a y aesthetic and call that column. 
+
+We use .. before and after we calling density, this is to tell ggplot that the column containing the density values is not to be found in my original data frame, but rather in the internal data frame. The shape of the histogram has not changed at all, but the y axis has been relabeled. 
+
+```{r}
+ggplot(cars, aes(x = mpg)) + 
+  geom_histogram(aes(y = ..density..), binwidth = 5)
+```
+
+We have three kinds of cyl in our dataset, so we can color our bars in accordance with cyl. This makes it clear that we have three histograms in the same plotting space.  
+
+```{r}
+ggplot(cars, aes(x = mpg, fill = cyl)) + 
+  geom_histogram(binwidth = 5)
+```
+
+There is a perceptual problem here, because it is not immediately clear if the bars are overlapping or if they are stacked on top of each other. The default is that they are stacked, but we have some alternative positions we can specify
+
+* dodge: offset each data point in a given category
+
+* fill: normalizes each bin to represent the proportion of all observations in each bin taken by each category. The y axis label didn't change, but it should say proportion, not count. 
+
+```{r}
+ggplot(cars, aes(x = mpg, fill = cyl)) + 
+  geom_histogram(binwidth = 5, position = 'dodge')
+```
+
+
+```{r}
+ggplot(cars, aes(x = mpg, fill = cyl)) + 
+  geom_histogram(binwidth = 5, position = "fill")
+```
+
+Now, try to create your own histogram of mpg using "fill" to seperate cars with different origins and arraning the bars with position = "dodge".
+
+```{r practice-6}
+# set aesthetic fill into origin
+# Find a approariate binwidth for this polt
+# set position into "dodge"
+
+```
+
+*geom_bar*
+
+A histogram is a special version of a bar plot. To make a bar plot proper, we need to use the geom_bar function. There are two types of bar plot,
+
+* Absolute counts
+* Distributions
+
+In the bar chart blow the data were counted and that count was plotted. So, once again, there were some statistics which occurred under the hood, in this case there was a default value of bin set for the stat argument. 
+
+These kinds of plots are useful in getting a quick visual output. 
+
+```{r}
+ggplot(cars, aes(cyl)) + geom_bar()
+```
+
+However, we often see another type of barplot, which tries to depict the distribution of a dataset. Let's consider a scenario similar to what we saw with the geom_point. What we have is a dataset with the summary value already calculated. 
+
+If we want to plot the average mpg for each kind of cyl, we can refer to the column in our data set containing the averages. 
+
+geom_errorbar has the option to add error bars, so here we add error bars of 95% CI.
+
+Again, we need to specify some aesthetics to this geom, namely ymin and ymax. 
+
+```{r}
+cars %>% 
+  group_by(cyl) %>%
+  summarize(avg_mpg = mean(mpg),
+            std = sd(mpg),
+            n = n(), 
+            m = 1.96*std/sqrt(n)) -> summ_cyl
+
+print(summ_cyl)
+
+ggplot(summ_cyl, aes(x = cyl, y = avg_mpg)) + 
+  geom_bar(stat = "identity", fill = "grey50") + 
+  geom_errorbar(aes(ymin = avg_mpg - m, ymax = avg_mpg + m), 
+                width = 0.2)
+```
+
+On top of that, I have set the width of the error bar tips to be narrow and I've made the fill of the bars themselves gray, so that we can see the error bars. This is the kind of plot that you'll typically see in a scientific publication, but it's pretty terrible. 
+
+Now you try to plot the average of mpg of each origin category, add the error bars.
+
+Here is the summarized table
+
+```{r}
+cars %>% 
+  group_by(origin) %>%
+  summarize(avg_mpg = mean(mpg),
+            std = sd(mpg),
+            n = n(), 
+            m = 1.96*std/sqrt(n)) -> summ_origin
+```
+
+Create your plot here
+
+```{r practice-7}
+
+```
+
+## Line Plots - Time Series
+
+Line plots are another typical type of plot we'll encounter. 
+In this part we will explore the geom_line function and a couple nice alternative plot types.
+
+woolyrnq dataset is the quarterly production of woolen yarn in Australia, which is from package forecast. We read this data in earlier under the name `wool`.
+
+As we talked before, this is wide data, where the value in columns Qtr1, Qtr2, Qtr3 and Qtr4 are all production and they should belong to the same variable. Let transform this table first.
+
+```{r}
+wool <- gather(wool, "Qtr", "Prod", -Year)
+```
+
+Our basic line plot is pretty straightforward,  we follow the syntax we've seen so far. This is the simplest case scenario with only a single time series. 
+
+```{r}
+ggplot(wool, aes(x = Year, y = Prod)) + 
+  geom_line()
+```
+
+Now, you try to explore another dataset, wineind, which also comes from the forecast package. Transform it into the easily used format.
+
+```{r practice-8}
+
+```
+
+When we want to compare many different groups, each group can be represented with a line.  
+
+The series can be encoded using line type, which is seen as dashes, and size, which means the thickness or color.
+
+```{r}
+ggplot(wool, aes(x = Year, y = Prod, linetype = Qtr)) + 
+  geom_line()
+```
+
+Consider this plot, which compares the wool production of 4 different quarters from 1965 to 1993. The abundance of line types makes it difficult to distinguish individual series when using line type. 
+
+The most salient choice is color, when available, since it allows the easiest way of distinguishing between each series.
+
+Using color to encode the series results in immediately discernible groups, so we'll stick with this aesthetic mapping. 
+
+```{r}
+ggplot(wool, aes(x = Year, y = Prod, col = Qtr)) + 
+  geom_line()
+```
+
+Now, you try to create a line plot to compare sales of different months in each year.
+
+```{r practice-9}
+
+```
+
+*geom_area*
+
+There are couple of alternatives to showing lines. For example, we could have used an area fill, with geom area, which defaults to position = stack. So instead of overlapping time series, they are added together at each point. 
+
+```{r}
+ggplot(wool, aes(x = Year, y = Prod, fill = Qtr)) + 
+  geom_area()
+```
+
+Just like the geom_bar position, we can also adjust this to position = "fill", which means that for each time point, we have a proportion of the total capture represented by each quarter. 
+
+```{r}
+ggplot(wool, aes(x = Year, y = Prod, col = Qtr, fill = Qtr)) + 
+  geom_area(position = "fill")
+```
+
+This kind of plot is useful in looking at proportional trends over time, and in this case, it gives a good impression of which quarters are most productive.  
+
+However, one difficulty with this kind of plot is that only the bottom and top groups are actually drawn on the common scale. All the other ones are irregular shapes so they can be a bit difficult decipher. 
+
+The final type of plot we'll look at here is in the scenario where we have overlapping area plots. 
+
+*geom_ribbion*
+
+In this case we'd have to use geom_ribbion and force the y_min to 0. Here, we set the alpha level so we can see the overlap. There is still a challenge in deciphering all of the time series, in particular at the bottom, where there are many overlapping series.
+
+```{r}
+ggplot(wool, aes(x = Year, y = Prod, fill = Qtr)) + 
+  geom_ribbon(aes(ymax = Prod, ymin = 0), alpha = 0.3)
+```
+
+
+Now, it's your turn to create an appropriate plot compare Sales among different months in each year.
+
+```{r practice-10}
+
+```
+
