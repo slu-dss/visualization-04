@@ -385,9 +385,9 @@ However, one difficulty with this kind of plot is that only the bottom and top g
 
 The final type of plot we'll look at here is in the scenario where we have overlapping area plots. 
 
-*geom_ribbion*
+*geom_ribbon*
 
-In this case we'd have to use geom_ribbion and force the y_min to 0. Here, we set the alpha level so we can see the overlap. There is still a challenge in deciphering all of the time series, in particular at the bottom, where there are many overlapping series.
+In this case we'd have to use geom_ribbon and force the y_min to 0. Here, we set the alpha level so we can see the overlap. There is still a challenge in deciphering all of the time series, in particular at the bottom, where there are many overlapping series.
 
 ```{r}
 ggplot(wool, aes(x = Year, y = Prod, fill = Qtr)) + 

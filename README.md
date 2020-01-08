@@ -12,9 +12,9 @@ This repository contains the fourth lesson for the Data Visualization in R semin
 ### Objectives
 At the end of this lesson, participants should be able to:
 
-1. Objective 1
-2. Objective 2
-3. Objective 3
+1. Construct scatter plots using the point or jitter geometries
+2. Make bar plots via histogram or bar geometries
+3. Draw line plots using line or ribbon geometries
 
 ### Lesson Resources
 * The [`SETUP.md`](/references/SETUP.md) file in the [`references/`](/references) directory contains a list of packages required for this lesson
