@@ -1,0 +1,61 @@
+---
+title: "Visualization 04 Challenge"
+author: "Maya Gann-Bociek & Matthew Schuelke, Ph.D."
+date: '(`r format(Sys.time(), "%B %d, %Y")`)'
+output:
+  github_document: default
+  html_notebook: default
+---
+
+## Introduction
+
+This time you will try to create a bar plots to plot the average BP for each age decade, and add an error bar as the standard deviation. 
+
+## Tasks
+1. Load dependencies
+2. Load in the dataset "nhanes_c3.csv" into your environment
+3. Explore the data
+4. Plot the data
+
+## Load Dependencies
+
+The following code loads the package dependencies for our analysis:
+
+```{r package-load-1}
+
+```
+
+We now have the packages needed for our analyses.
+
+## Load Data 
+
+Load in data "nhanes_c3.csv"
+
+```{r}
+
+```
+
+## Explore the Data
+
+Print and summary the dataset to get familar with your data
+
+```{r}
+
+```
+
+## Plot the Data
+
+Create a jitter plot to plot BP against ageDecase, and map gender to color
+
+```{r}
+
+```
+
+In this graph, try to plot the average BP of each ageDecade and 
+
+* plot male and female seperately 
+* add standard diviation error bar to each bar
+
+```{r}
+
+```
